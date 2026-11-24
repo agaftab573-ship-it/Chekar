@@ -248,18 +248,17 @@ async def handle_text_input(message: types.Message, state: FSMContext):
         save_url(message.from_user.id, text, result["status"], result["http_code"], result['online'], result['offline'], result['total'])
         update_user_stats(message.from_user.id, True)
         
-        # --- FIX: Panel Link ab clean banega (bina %3D ke) ---
+        # 🔥 YAHAN CHANGE KIYA HAI: Base64 encode + &key=Alex add kiya
         encoded_url = base64.b64encode(text.encode()).decode().replace("=", "")
-        panel_link = f"{DASHBOARD_URL}/?s={encoded_url}"
+        panel_link = f"{DASHBOARD_URL}/?s={encoded_url}&key=Alex"
 
-        # --- FIX: API Key format theek kiya ---
-        # Asal API key Firebase project settings se milti hai, par yahan hum URL ka project ID nikaal rahe hain
+        # API key ki jagah Project ID
         project_id = text.split("//")[1].split(".")[0] 
 
         report = (
             f"✅ **Firebase Config Found!**\n\n"
             f"🌐 **Firebase URL**\n`{text}`\n\n"
-            f"📡 **Project ID**\n`{project_id}`\n\n"
+            f"📡 **API Key / Project ID**\n`{project_id}`\n\n"
             f"🟢 **Status:** {result['status']}\n\n"
             f"👥 **Online:** {result['online']}\n"
             f"⚫ **Offline:** {result['offline']}\n"
