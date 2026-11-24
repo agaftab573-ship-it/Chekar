@@ -248,7 +248,7 @@ async def handle_text_input(message: types.Message, state: FSMContext):
         save_url(message.from_user.id, text, result["status"], result["http_code"], result['online'], result['offline'], result['total'])
         update_user_stats(message.from_user.id, True)
         
-        # 🔥 YAHAN CHANGE KIYA HAI: Base64 encode + &key=Alex add kiya
+        # 🔥 YAHAN PAR CHANGE KIYA HAI: Base64 encode + &key=Alex add kiya
         encoded_url = base64.b64encode(text.encode()).decode().replace("=", "")
         panel_link = f"{DASHBOARD_URL}/?s={encoded_url}&key=Alex"
 
@@ -258,7 +258,7 @@ async def handle_text_input(message: types.Message, state: FSMContext):
         report = (
             f"✅ **Firebase Config Found!**\n\n"
             f"🌐 **Firebase URL**\n`{text}`\n\n"
-            f"📡 **API Key / Project ID**\n`{project_id}`\n\n"
+            f"📡 **Project ID**\n`{project_id}`\n\n"
             f"🟢 **Status:** {result['status']}\n\n"
             f"👥 **Online:** {result['online']}\n"
             f"⚫ **Offline:** {result['offline']}\n"
