@@ -1,3 +1,4 @@
+
 import os
 import sqlite3
 import logging
@@ -13,20 +14,28 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-# --- CONFIGURATION (Yahan apna Token aur ID daalein) ---
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE" 
-ADMIN_ID = 8917259924  # Apni ID
-CHANNEL_1 = "@SMARTEARNERS01" 
-CHANNEL_2 = "@zonexarmy" 
-DASHBOARD_URL = "https://eraxpanel-one.vercel.app" # Vercel link
+# --- CONFIGURATION ---
+BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Apna token dale
+ADMIN_ID = 8917259924  # Aapki Admin ID
 
-# --- DATABASE ---
+# CHANNELS UPDATE KIYE HAIN 👇
+CHANNEL_1 = "@SMARTEARNERS011" 
+CHANNEL_2 = "@zonexarmy" 
+
+DASHBOARD_URL = "https://eraxpanel-one.vercel.app" 
+
+# --- DATABASE SETUP ---
 DB_NAME = "zonex.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, username TEXT, first_name TEXT, joined_date TEXT, total_scans INTEGER DEFAULT 0, success_scans INTEGER DEFAULT 0, last_scan TEXT DEFAULT 'Never')''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS firebase_urls (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, url TEXT UNIQUE, status TEXT, http_code INTEGER, online_devices INTEGER, offline_devices INTEGER, total_devices INTEGER, first_added TEXT, last_checked TEXT)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+                        user_id INTEGER PRIMARY KEY, username TEXT, first_name TEXT, joined_date TEXT,
+                        total_scans INTEGER DEFAULT 0, success_scans INTEGER DEFAULT 0, last_scan TEXT DEFAULT 'Never')''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS firebase_urls (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, url TEXT UNIQUE, status TEXT, 
+                        http_code INTEGER, online_devices INTEGER, offline_devices INTEGER, total_devices INTEGER,
+                        first_added TEXT, last_checked TEXT)''')
     conn.commit()
     conn.close()
 
@@ -64,9 +73,11 @@ def save_url(user_id, url, status, http_code, online, offline, total):
     cursor.execute("SELECT id FROM firebase_urls WHERE url = ?", (url,))
     result = cursor.fetchone()
     if result:
-        cursor.execute("UPDATE firebase_urls SET status=?, http_code=?, online_devices=?, offline_devices=?, total_devices=?, last_checked=? WHERE url=?", (status, http_code, online, offline, total, now, url))
+        cursor.execute("UPDATE firebase_urls SET status=?, http_code=?, online_devices=?, offline_devices=?, total_devices=?, last_checked=? WHERE url=?",
+                       (status, http_code, online, offline, total, now, url))
     else:
-        cursor.execute("INSERT INTO firebase_urls (user_id, url, status, http_code, online_devices, offline_devices, total_devices, first_added, last_checked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (user_id, url, status, http_code, online, offline, total, now, now))
+        cursor.execute("INSERT INTO firebase_urls (user_id, url, status, http_code, online_devices, offline_devices, total_devices, first_added, last_checked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                       (user_id, url, status, http_code, online, offline, total, now, now))
     conn.commit()
     conn.close()
 
@@ -132,15 +143,24 @@ class BotStates(StatesGroup):
     waiting_for_scan = State()
 
 # --- HELPERS ---
+# Force Join Check (Improved)
 async def check_subscription(user_id):
     try:
+        # Check Channel 1
         member1 = await bot.get_chat_member(CHANNEL_1, user_id)
+        if member1.status not in ['member', 'administrator', 'creator']:
+            return False
+            
+        # Check Channel 2
         member2 = await bot.get_chat_member(CHANNEL_2, user_id)
-        if member1.status in ['member', 'administrator', 'creator'] and member2.status in ['member', 'administrator', 'creator']:
-            return True
-        return False
-    except:
-        return False
+        if member2.status not in ['member', 'administrator', 'creator']:
+            return False
+            
+        return True
+    except Exception as e:
+        # Agar bot admin nahi hai channel me, toh error log karega par user ko andar aane dega (taki bot faaltu na atke)
+        logging.error(f"Subscription check error: {e}")
+        return True 
 
 def get_main_menu():
     markup = InlineKeyboardMarkup(row_width=2)
@@ -192,7 +212,7 @@ async def verify_join(call: types.CallbackQuery):
         await call.message.delete()
         await cmd_start(call.message, dp.get_current_state())
     else:
-        await call.answer("❌ Aapne abhi tak channels join nahi kiye!", show_alert=True)
+        await call.answer("❌ Aapne abhi tak dono channels join nahi kiye! Pehle dono channel join karo.", show_alert=True)
 
 @dp.callback_query_handler(text="main_menu")
 async def show_menu(call: types.CallbackQuery):
