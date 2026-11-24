@@ -16,11 +16,10 @@
 <body>
     <div class="box">
         <h2>ERA X PANEL</h2>
-        <!-- Form jisme data auto-fill hoga -->
         <form id="firebaseForm">
             <input type="text" id="fbUrl" placeholder="Firebase URL" required>
             <input type="text" id="fbKey" placeholder="Authentication Key / Secret" required>
-            <button type="submit">⚡ Save & Connect</button>
+            <button type="submit" id="submitBtn">⚡ Save & Connect</button>
         </form>
     </div>
 
@@ -40,13 +39,12 @@
                 document.getElementById('fbKey').value = apiKey ? apiKey : "Alex";
                 
                 // Auto-Submit (Taaki user ko button na dabana pade)
-                // Agar aapka dashboard backend hai jo form submit karta hai, toh ye automatically chala jayega
                 setTimeout(() => {
-                    document.getElementById('firebaseForm').dispatchEvent(new Event('submit'));
+                    document.getElementById('submitBtn').click();
                 }, 1000);
 
             } catch (e) {
-                alert("Invalid Panel Link!");
+                alert("Invalid Panel Link! " + e.message);
             }
         }
     </script>
