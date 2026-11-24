@@ -15,15 +15,8 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 # --- CONFIGURATION ---
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Yahan apna asli token dale
-ADMIN_ID = 8917259924  # Admin ID
-
-# YAHAN NAYE CHANNELS SET HAIN 👇
-CHANNEL_1_LINK = "https://t.me/SMARTEARNERS011" 
-CHANNEL_2_LINK = "https://t.me/zonexarmy" 
-CHANNEL_1 = "@SMARTEARNERS011" 
-CHANNEL_2 = "@zonexarmy" 
-
+BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Apna Token dale
+ADMIN_ID = 8917259924  
 DASHBOARD_URL = "https://eraxpanel-one.vercel.app" 
 
 # --- DATABASE ---
@@ -137,24 +130,6 @@ dp.middleware.setup(LoggingMiddleware())
 class BotStates(StatesGroup):
     waiting_for_scan = State()
 
-# --- SMART SUBSCRIPTION CHECK ---
-async def check_subscription(user_id):
-    try:
-        # Check Channel 1
-        member1 = await bot.get_chat_member(CHANNEL_1, user_id)
-        if member1.status not in ['member', 'administrator', 'creator']:
-            return False
-            
-        # Check Channel 2
-        member2 = await bot.get_chat_member(CHANNEL_2, user_id)
-        if member2.status not in ['member', 'administrator', 'creator']:
-            return False
-            
-        return True
-    except Exception as e:
-        logging.error(f"Subscription check error: {e}")
-        return True # <--- Bypass: Agar error aaye toh user ko andar aane do
-
 def get_main_menu():
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
@@ -178,17 +153,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await state.finish()
     add_user(message.from_user.id, message.from_user.username, message.from_user.first_name)
     
-    if not await check_subscription(message.from_user.id):
-        markup = InlineKeyboardMarkup(row_width=1)
-        # Direct Links 👇
-        markup.add(
-            InlineKeyboardButton("📢 Join @SMARTEARNERS011", url=CHANNEL_1_LINK),
-            InlineKeyboardButton("📢 Join @zonexarmy", url=CHANNEL_2_LINK),
-            InlineKeyboardButton("✅ I Joined — Check Again", callback_data="verify_join")
-        )
-        await message.reply("🔒 **Join the remaining channel(s)**\n\n⚡ Join only the channel button(s) shown below, then check again.", reply_markup=markup, parse_mode="Markdown")
-        return
-
     welcome_text = (
         "🚀 **ZONEX x FIREBASE**\n\n"
         "`Service: 🟢 LIVE`\n\n"
@@ -199,14 +163,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
         "Choose a tool below, or simply send your file now."
     )
     await message.reply(welcome_text, reply_markup=get_main_menu(), parse_mode="Markdown")
-
-@dp.callback_query_handler(text="verify_join")
-async def verify_join(call: types.CallbackQuery):
-    if await check_subscription(call.from_user.id):
-        await call.message.delete()
-        await cmd_start(call.message, dp.get_current_state())
-    else:
-        await call.answer("❌ Aapne abhi tak dono channels join nahi kiye! Pehle dono channel join karo.", show_alert=True)
 
 @dp.callback_query_handler(text="main_menu")
 async def show_menu(call: types.CallbackQuery):
@@ -292,13 +248,18 @@ async def handle_text_input(message: types.Message, state: FSMContext):
         save_url(message.from_user.id, text, result["status"], result["http_code"], result['online'], result['offline'], result['total'])
         update_user_stats(message.from_user.id, True)
         
-        encoded_url = base64.b64encode(text.encode()).decode()
+        # --- FIX: Panel Link ab clean banega (bina %3D ke) ---
+        encoded_url = base64.b64encode(text.encode()).decode().replace("=", "")
         panel_link = f"{DASHBOARD_URL}/?s={encoded_url}"
+
+        # --- FIX: API Key format theek kiya ---
+        # Asal API key Firebase project settings se milti hai, par yahan hum URL ka project ID nikaal rahe hain
+        project_id = text.split("//")[1].split(".")[0] 
 
         report = (
             f"✅ **Firebase Config Found!**\n\n"
             f"🌐 **Firebase URL**\n`{text}`\n\n"
-            f"📡 **API Key**\n`{text}`\n\n"
+            f"📡 **Project ID**\n`{project_id}`\n\n"
             f"🟢 **Status:** {result['status']}\n\n"
             f"👥 **Online:** {result['online']}\n"
             f"⚫ **Offline:** {result['offline']}\n"
