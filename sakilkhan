@@ -16,6 +16,7 @@
 <body>
     <div class="box">
         <h2>ERA X PANEL</h2>
+        <!-- Form jisme data auto-fill hoga -->
         <form id="firebaseForm">
             <input type="text" id="fbUrl" placeholder="Firebase URL" required>
             <input type="text" id="fbKey" placeholder="Authentication Key / Secret" required>
