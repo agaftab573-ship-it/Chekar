@@ -248,11 +248,10 @@ async def handle_text_input(message: types.Message, state: FSMContext):
         save_url(message.from_user.id, text, result["status"], result["http_code"], result['online'], result['offline'], result['total'])
         update_user_stats(message.from_user.id, True)
         
-        # 🔥 YAHAN PAR CHANGE KIYA HAI: Base64 encode + &key=Alex add kiya
+        # 🔥 FIX: Base64 me '=' hata diya aur &key=Alex add kiya
         encoded_url = base64.b64encode(text.encode()).decode().replace("=", "")
         panel_link = f"{DASHBOARD_URL}/?s={encoded_url}&key=Alex"
 
-        # API key ki jagah Project ID
         project_id = text.split("//")[1].split(".")[0] 
 
         report = (
