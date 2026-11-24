@@ -18,7 +18,10 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Apna token dale
 ADMIN_ID = 8917259924  # Aapki Admin ID
 
-# CHANNELS UPDATE KIYE HAIN 👇
+# CHANNEL LINKS FIX KIYE HAIN 👇
+CHANNEL_1_LINK = "https://t.me/SMARTEARNERS011" 
+CHANNEL_2_LINK = "https://t.me/zonexarmy" 
+# Check karne ke liye username
 CHANNEL_1 = "@SMARTEARNERS011" 
 CHANNEL_2 = "@zonexarmy" 
 
@@ -158,9 +161,8 @@ async def check_subscription(user_id):
             
         return True
     except Exception as e:
-        # Agar bot admin nahi hai channel me, toh error log karega par user ko andar aane dega (taki bot faaltu na atke)
         logging.error(f"Subscription check error: {e}")
-        return True 
+        return True # Agar error aaye (bot admin na ho) toh user ko andar aane do
 
 def get_main_menu():
     markup = InlineKeyboardMarkup(row_width=2)
@@ -187,9 +189,10 @@ async def cmd_start(message: types.Message, state: FSMContext):
     
     if not await check_subscription(message.from_user.id):
         markup = InlineKeyboardMarkup(row_width=1)
+        # Yahan direct link use kiya hai taaki mistake na ho
         markup.add(
-            InlineKeyboardButton(f"📢 Join {CHANNEL_1}", url=f"https://t.me/{CHANNEL_1.replace('@','')}"),
-            InlineKeyboardButton(f"📢 Join {CHANNEL_2}", url=f"https://t.me/{CHANNEL_2.replace('@','')}"),
+            InlineKeyboardButton("📢 Join @SMARTEARNERS011", url=CHANNEL_1_LINK),
+            InlineKeyboardButton("📢 Join @zonexarmy", url=CHANNEL_2_LINK),
             InlineKeyboardButton("✅ I Joined — Check Again", callback_data="verify_join")
         )
         await message.reply("🔒 **Join the remaining channel(s)**\n\n⚡ Join only the channel button(s) shown below, then check again.", reply_markup=markup, parse_mode="Markdown")
