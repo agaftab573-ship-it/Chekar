@@ -11,12 +11,17 @@
         h2 { color: #00ff88; margin-bottom: 20px; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0d1425; border: 1px solid #1f2f4d; color: white; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #00ff88; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        /* Naya Dashboard Style */
+        #dashboard { display: none; text-align: left; }
+        .device-card { background: #0d1425; border: 1px solid #1f2f4d; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .status-dot { height: 10px; width: 10px; background-color: #00ff88; border-radius: 50%; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 <body>
-    <div class="box">
+    <!-- Form Section -->
+    <div class="box" id="formBox">
         <h2>ERA X PANEL</h2>
-        <!-- Form jisme data auto-fill hoga -->
         <form id="firebaseForm">
             <input type="text" id="fbUrl" placeholder="Firebase URL" required>
             <input type="text" id="fbKey" placeholder="Authentication Key / Secret" required>
@@ -24,29 +29,79 @@
         </form>
     </div>
 
+    <!-- Dashboard Section (Jab form save hoga tab dikhega) -->
+    <div class="box" id="dashboard">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>ERA Console</h2>
+            <button onclick="logout()" style="width: auto; padding: 5px 10px; font-size: 12px;">Logout</button>
+        </div>
+        <p style="font-size: 12px; color: #aaa;">Connected: <span id="dispUrl"></span></p>
+        
+        <div class="device-card">
+            <p><span class="status-dot"></span> <b>Device 1 (Online)</b></p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 5px;">Battery: 85% | Android: 12</p>
+        </div>
+        <div class="device-card">
+            <p><span class="status-dot" style="background-color: #ff4444;"></span> <b>Device 2 (Offline)</b></p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 5px;">Battery: 12% | Android: 10</p>
+        </div>
+    </div>
+
     <script>
+        // Check if already logged in (LocalStorage)
+        const savedUrl = localStorage.getItem('fbUrl');
+        const savedKey = localStorage.getItem('fbKey');
+
+        if (savedUrl && savedKey) {
+            showDashboard(savedUrl);
+        }
+
         // URL se data nikalne ka logic
         const urlParams = new URLSearchParams(window.location.search);
-        const encodedUrl = urlParams.get('s'); // Base64 encoded URL
-        const apiKey = urlParams.get('key'); // API key (Alex)
+        const encodedUrl = urlParams.get('s');
+        const apiKey = urlParams.get('key');
 
         if (encodedUrl) {
             try {
-                // Base64 decode karke URL nikalo
                 const firebaseUrl = atob(encodedUrl);
                 document.getElementById('fbUrl').value = firebaseUrl;
-                
-                // Agar key aayi hai toh daalo, warna default "Alex"
                 document.getElementById('fbKey').value = apiKey ? apiKey : "Alex";
                 
-                // Auto-Submit (Taaki user ko button na dabana pade)
+                // Auto Submit
                 setTimeout(() => {
-                    document.getElementById('submitBtn').click();
+                    document.getElementById('firebaseForm').dispatchEvent(new Event('submit'));
                 }, 1000);
 
             } catch (e) {
-                alert("Invalid Panel Link! " + e.message);
+                alert("Invalid Panel Link!");
             }
+        }
+
+        // Form Submit Logic
+        document.getElementById('firebaseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const url = document.getElementById('fbUrl').value;
+            const key = document.getElementById('fbKey').value;
+            
+            // Save to LocalStorage
+            localStorage.setItem('fbUrl', url);
+            localStorage.setItem('fbKey', key);
+            
+            showDashboard(url);
+        });
+
+        // Dashboard show function
+        function showDashboard(url) {
+            document.getElementById('formBox').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('dispUrl').innerText = url;
+        }
+
+        // Logout Function
+        function logout() {
+            localStorage.removeItem('fbUrl');
+            localStorage.removeItem('fbKey');
+            window.location.reload();
         }
     </script>
 </body>
