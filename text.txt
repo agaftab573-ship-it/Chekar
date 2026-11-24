@@ -248,16 +248,13 @@ async def handle_text_input(message: types.Message, state: FSMContext):
         save_url(message.from_user.id, text, result["status"], result["http_code"], result['online'], result['offline'], result['total'])
         update_user_stats(message.from_user.id, True)
         
-        # 🔥 FIX: Base64 me '=' hata diya aur &key=Alex add kiya
+        # 🔥 Base64 me '=' hata diya aur &key=Alex add kiya (No API Key in report)
         encoded_url = base64.b64encode(text.encode()).decode().replace("=", "")
         panel_link = f"{DASHBOARD_URL}/?s={encoded_url}&key=Alex"
-
-        project_id = text.split("//")[1].split(".")[0] 
 
         report = (
             f"✅ **Firebase Config Found!**\n\n"
             f"🌐 **Firebase URL**\n`{text}`\n\n"
-            f"📡 **Project ID**\n`{project_id}`\n\n"
             f"🟢 **Status:** {result['status']}\n\n"
             f"👥 **Online:** {result['online']}\n"
             f"⚫ **Offline:** {result['offline']}\n"
